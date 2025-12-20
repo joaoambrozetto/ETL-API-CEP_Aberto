@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.environ['TOKEN']
+TOKEN = os.environ['API_TOKEN']
 
 # Acessar e ler os dados do arquivo csv, criando um dataframe temporário
 
