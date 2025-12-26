@@ -5,22 +5,27 @@ import requests
 
 from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente
+from data_manipulation import cep_format, get_data_from_api
+from database import init_db, create_table, insert_data
 
+
+# Carregar variáveis de ambiente:
 load_dotenv()
 
-TOKEN = os.environ['API_TOKEN']
-
-# Acessar e ler os dados do arquivo csv, criando um dataframe temporário
-
+# Constantes:
 CSV_PATH = './data/raw_data/lista_ceps.csv'
+TOKEN = os.environ['API_TOKEN']
+USER = os.environ['MYSQL_USER']
+PASSWORD = os.environ['MYSQL_PASSWORD']
+HOST = os.environ['MYSQL_HOST']
+PORT = os.environ['MYSQL_PORT']
 
+
+# Acessar e ler os dados do arquivo csv, criando um dataframe temporário:
 temp_df = pd.DataFrame(pd.read_csv(CSV_PATH))
 
-# Formatar o CEP de '00000-000' para '00000000' para usar na requisição
-
-for x in range(temp_df.size):
-    temp_df.loc[x] = temp_df.loc[x][:5] + temp_df.loc[x][6:]
+# Chamar a função cep_format para alterar o cep de '00000-000' para '00000000' para usar na requisição:
+cep_format(temp_df)
 
 # Criar um dataframe vazio para popular com as requisições:
 
@@ -39,10 +44,7 @@ df = pd.DataFrame(data=columns, index=[])
 
 # Fazer a requisição para a API CEP Aberto
 
-CEP = '13481164'
-URL = f'https://www.cepaberto.com/api/v3/cep?cep={CEP}'
-headers = {'Authorization': f'Token token={TOKEN}'}
-response = requests.get(URL, headers=headers)
+response = get_data_from_api('13481164', TOKEN)
 
 # Inserir dados do response no DataFrame:
 data = response.json()
@@ -70,4 +72,5 @@ else:
                  data['estado']['sigla'],
                  data['cidade']['ddd'],
                  data['cidade']['ibge']]
-print(df)
+
+init_db(USER, PASSWORD, HOST, PORT, 'TesteDB')
