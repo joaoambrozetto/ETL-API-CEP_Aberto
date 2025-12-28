@@ -2,6 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 import requests
+import time
 
 from dotenv import load_dotenv
 
@@ -21,56 +22,46 @@ HOST = os.environ['MYSQL_HOST']
 PORT = os.environ['MYSQL_PORT']
 
 
-# Acessar e ler os dados do arquivo csv, criando um dataframe temporário:
-temp_df = pd.DataFrame(pd.read_csv(CSV_PATH))
+# Acessar e ler os dados do arquivo csv:
+source_cep_df = pd.DataFrame(pd.read_csv(CSV_PATH))
 
 # Chamar a função cep_format para alterar o cep de '00000-000' para '00000000' para usar na requisição:
-cep_format(temp_df)
-
-# Criar um dataframe vazio para popular com as requisições:
-
-columns = {'altitude': None,
-           'cep': None,
-           'latitude': None,
-           'longitude': None,
-           'logradouro': None,
-           'bairro': None,
-           'complemento': None,
-           'cidade': None,
-           'estado': None,
-           'ddd': None,
-           'ibge': None}
-df = pd.DataFrame(data=columns, index=[])
+cep_format(source_cep_df)
 
 # Fazer a requisição para a API CEP Aberto
+for x in source_cep_df['cep']: # Usar esse loop na versão final
+    pass
 
-response = get_data_from_api('13481164', TOKEN)
+response_dict = {'altitude': [],
+                 'cep': [],
+                 'latitude': [],
+                 'longitude': [],
+                 'logradouro': [],
+                 'bairro': [],
+                 'complemento': [],
+                 'cidade': [],
+                 'ddd': [],
+                 'ibge_id': [],
+                 'estado_sigla': []}
 
-# Inserir dados do response no DataFrame:
-data = response.json()
-if 'complemento' not in data.keys():
-    df.loc[0] = [data['altitude'],
-                 data['cep'],
-                 data['latitude'],
-                 data['longitude'],
-                 data['logradouro'],
-                 data['bairro'],
-                 np.nan,
-                 data['cidade']['nome'],
-                 data['estado']['sigla'],
-                 data['cidade']['ddd'],
-                 data['cidade']['ibge']]
-else:
-    df.loc[0] = [data['altitude'],
-                 data['cep'],
-                 data['latitude'],
-                 data['longitude'],
-                 data['logradouro'],
-                 data['bairro'],
-                 data['complemento'],
-                 data['cidade']['nome'],
-                 data['estado']['sigla'],
-                 data['cidade']['ddd'],
-                 data['cidade']['ibge']]
+for i in range(1):
+    cep = source_cep_df['cep'].loc[i]
+    response = get_data_from_api(cep, TOKEN).json()
+    norm_response = pd.json_normalize(response)
+    
+    response_dict['altitude'].append(norm_response['altitude'].loc[0])
+    response_dict['cep'].append(norm_response['cep'].loc[0])
+    response_dict['latitude'].append(norm_response['latitude'].loc[0])
+    response_dict['longitude'].append(norm_response['longitude'].loc[0])
+    response_dict['logradouro'].append(norm_response['logradouro'].loc[0])
+    response_dict['bairro'].append(norm_response['bairro'].loc[0])
+    response_dict['complemento'].append(norm_response['complemento'].loc[0])
+    response_dict['cidade'].append(norm_response['cidade.nome'].loc[0])
+    response_dict['ddd'].append(norm_response['cidade.ddd'].loc[0])
+    response_dict['ibge_id'].append(norm_response['cidade.ibge'].loc[0])
+    response_dict['estado_sigla'].append(norm_response['estado.sigla'].loc[0])
+    
+    time.sleep(1)
 
-init_db(USER, PASSWORD, HOST, PORT, 'TesteDB')
+final_df = pd.DataFrame(response_dict)
+print(final_df.head(5))
