@@ -3,6 +3,11 @@
 # ETL - Dados de endereçamento postal
 Esse projeto implementa uma pipeline de ETL (Extract, Transform, Load) que lê os CEPS de um arquivo CSV e realiza requisições para a API CEP Aberto. Os dados obtidos na requisição são tratados e inseridos em um Dataframe do Pandas para posterior inserção em um banco de dados MySQL rodando via Docker.
 
+> [!IMPORTANT]
+> Estou desenvolvendo esse projeto como uma preparação para um projeto mais ambicioso relacionado com pacotes entregues de um determinado e-commerce.
+> A partir de dados de entrega de uma planilha do Google Sheets, o script fará requisições para enriquecê-los e carregá-los no banco de dados utilizando Batch Processing e um Scheduler.
+> Os dados obtidos serão utilizados para análise dos dados de entrega (taxa de sucesso, locais que mais compram, causas mais comuns de devolução, etc).
+
 ## Tecnologias utilizadas
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
